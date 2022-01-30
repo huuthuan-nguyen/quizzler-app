@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+QuizBrain quizBrain = QuizBrain();
 
 void main() {
   runApp(Quizzler());
@@ -28,6 +32,45 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizState extends State<QuizPage> {
+  List<Widget> scoreKeeper = [];
+
+  void checkAnswer(BuildContext context, bool userPickedAnswer) {
+    setState(() {
+      bool correctAnswer = quizBrain.getCorrectAnswer();
+      if (quizBrain.nextQuestion()) {
+        if (userPickedAnswer == correctAnswer) {
+          scoreKeeper.add(Icon(
+            Icons.check,
+            color: Colors.grey,
+          ));
+        } else {
+          scoreKeeper.add(Icon(
+            Icons.close,
+            color: Colors.red,
+          ));
+        }
+      } else {
+        Alert(
+          context: context,
+          type: AlertType.success,
+          title: "Congratulation!",
+          desc: "You have completed all quizz.",
+          buttons: [
+            DialogButton(
+              child: Text(
+                "OK",
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              onPressed: () => Navigator.pop(context),
+              width: 120,
+            )
+          ],
+        ).show();
+        return;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -38,7 +81,7 @@ class _QuizState extends State<QuizPage> {
             padding: EdgeInsets.all(10),
             child: Center(
               child: Text(
-                "This is where the question text will go.",
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25,
@@ -56,7 +99,9 @@ class _QuizState extends State<QuizPage> {
                 backgroundColor: MaterialStateProperty.all(Colors.green),
                 foregroundColor: MaterialStateProperty.all(Colors.white),
               ),
-              onPressed: null,
+              onPressed: () {
+                checkAnswer(context, true);
+              },
               child: Text(
                 "True",
                 style: TextStyle(
@@ -75,7 +120,9 @@ class _QuizState extends State<QuizPage> {
                 foregroundColor: MaterialStateProperty.all(Colors.red),
                 backgroundColor: MaterialStateProperty.all(Colors.red),
               ),
-              onPressed: null,
+              onPressed: () {
+                checkAnswer(context, false);
+              },
               child: Text(
                 "False",
                 style: TextStyle(
@@ -85,6 +132,9 @@ class _QuizState extends State<QuizPage> {
               ),
             ),
           ),
+        ),
+        Row(
+          children: scoreKeeper,
         ),
       ],
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
